@@ -5,6 +5,7 @@ const boardElement = document.querySelector(".chessboard");
 let draggedPiece = null;
 let sourceSquare = null;
 let playerRole = null;
+let gameOver = false;
 
 const renderBoard = () => {
     const board = chess.board();
@@ -28,7 +29,7 @@ const renderBoard = () => {
                 pieceElement.innerText = getPieceUnicode(square);
                 pieceElement.draggable= playerRole === square.color;
                 pieceElement.addEventListener("dragstart",(e)=>{
-                     if(pieceElement.draggable){
+                      if (pieceElement.draggable && !gameOver) {
                         draggedPiece=pieceElement;
                         sourceSquare={ row : rowindex , col : squareindex};
                         e.dataTransfer.setData("text/plain","");
@@ -68,6 +69,7 @@ const renderBoard = () => {
 };
 
 const handleMove = (source,target) => {
+      if (gameOver) return; 
       const move = {
             from: `${String.fromCharCode(97+source.col)}${8-source.row}`,
             to: `${String.fromCharCode(97+target.col)}${8-target.row}`,
@@ -108,6 +110,14 @@ socket.on("move",function(move){
     renderBoard();
 });
 
-
+socket.on("gameOver", (data) => {
+    gameOver = true; // stop further moves
+    if (data.draw) {
+        alert("Game over: Draw!");
+    } else {
+        const winner = data.winner === socket.id ? "You won!" : "You lost!";
+        alert("Game over! " + winner);
+    }
+});
 
 renderBoard();
