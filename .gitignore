@@ -1,0 +1,12 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Environment files
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
