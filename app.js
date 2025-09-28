@@ -43,6 +43,7 @@ io.on("connection", function (uniquesocket) {
             delete players.black;
         }
     });
+
     uniquesocket.on("move", (move) => {
         try {
             if (chess.turn() === "w" && uniquesocket.id !== players.white) return;
@@ -53,13 +54,13 @@ io.on("connection", function (uniquesocket) {
                 currentPlayer = chess.turn();
                 io.emit("move", move);
                 io.emit("boardState", chess.fen());
-                // Game over checks
-                if (chess.in_checkmate()) {
-                    io.emit("gameOver", { winner: uniquesocket.id }); // current player made the winning move
-                } else if (chess.in_stalemate() || chess.in_draw()) {
+                
+                // Game over checks - FIXED METHOD NAMES
+                if (chess.isCheckmate()) {
+                    io.emit("gameOver", { winner: uniquesocket.id });
+                } else if (chess.isStalemate() || chess.isDraw()) {
                     io.emit("gameOver", { winner: null, draw: true });
                 }
-
             } else {
                 console.log("Invalid Move: ", move);
                 uniquesocket.emit("invalidMove", move);
@@ -69,11 +70,8 @@ io.on("connection", function (uniquesocket) {
             console.log(err);
             uniquesocket.emit("invalidMove", move);
         }
-    })
-
+    });
 });
-
-
 
 server.listen(process.env.PORT || 3000, () => {
     console.log("Listening on port " + (process.env.PORT || 3000));

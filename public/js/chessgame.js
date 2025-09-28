@@ -36,7 +36,7 @@ const renderBoard = () => {
                      }
                 });
                 pieceElement.addEventListener("dragend", (e)=>{
-                    dragggedPiece = null;
+                    draggedPiece = null; // FIXED TYPO
                     sourceSquare = null;
                 });
                 squareElement.appendChild(pieceElement);
@@ -54,7 +54,6 @@ const renderBoard = () => {
                     };
                     handleMove(sourceSquare, targetSource);
                 }
-                
             })
             boardElement.appendChild(squareElement);
         });
@@ -68,14 +67,26 @@ const renderBoard = () => {
     }
 };
 
-const handleMove = (source,target) => {
-      if (gameOver) return; 
-      const move = {
-            from: `${String.fromCharCode(97+source.col)}${8-source.row}`,
-            to: `${String.fromCharCode(97+target.col)}${8-target.row}`,
-            promotion: "q"
-      };
-      socket.emit("move",move);
+const handleMove = (source, target) => {
+    if (gameOver) return; 
+    
+    const fromSquare = `${String.fromCharCode(97+source.col)}${8-source.row}`;
+    const toSquare = `${String.fromCharCode(97+target.col)}${8-target.row}`;
+    
+    // FIXED: Only add promotion if it's actually a pawn promotion
+    const move = { from: fromSquare, to: toSquare };
+    
+    // Check if this is a pawn promotion
+    const piece = chess.get(fromSquare);
+    if (piece && piece.type === 'p') {
+        // White pawn promoting to 8th rank or black pawn promoting to 1st rank
+        if ((piece.color === 'w' && toSquare[1] === '8') || 
+            (piece.color === 'b' && toSquare[1] === '1')) {
+            move.promotion = 'q'; // Default to queen promotion
+        }
+    }
+    
+    socket.emit("move", move);
 };
 
 const getPieceUnicode = (piece) => {
@@ -111,13 +122,18 @@ socket.on("move",function(move){
 });
 
 socket.on("gameOver", (data) => {
-    gameOver = true; // stop further moves
+    gameOver = true;
     if (data.draw) {
         alert("Game over: Draw!");
     } else {
         const winner = data.winner === socket.id ? "You won!" : "You lost!";
         alert("Game over! " + winner);
     }
+});
+
+socket.on("invalidMove", (move) => {
+    console.log("Invalid move attempted:", move);
+    // Optionally show user feedback
 });
 
 renderBoard();
