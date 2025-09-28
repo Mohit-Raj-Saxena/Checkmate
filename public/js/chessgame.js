@@ -132,7 +132,7 @@ socket.on("gameOver", (data) => {
 });
 
 socket.on("invalidMove", (move) => {
-    console.log("Invalid move attempted:", move);
+    // console.log("Invalid move attempted:", move);
     // Optionally show user feedback
 });
 
